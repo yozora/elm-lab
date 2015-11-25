@@ -38,9 +38,9 @@ buildScene board =
   Dict.toList board
   |> List.map (\(pos, tcolor) -> block (toColor tcolor) pos)
 
-render : Board -> Element
-render board =
-  let scene = buildScene board in
+render : GameState -> Element
+render state =
+  let scene = buildScene state.board in
   let trough =
     let ys = Array.toList <| Array.initialize (rows - 1) ((+) 1) in
     let xs = Array.toList <| Array.initialize (cols) identity in
