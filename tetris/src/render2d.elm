@@ -25,18 +25,18 @@ toColor tcolor =
     Orange -> Color.darkOrange
     Shadow -> Color.darkCharcoal
 
-block : Color -> Position -> Form
+block : Color -> Position -> List Form
 block colour (x,y) =
-  filled colour (square blockDim)
-  |> move (blockDim / 2, blockDim / 2)
-  |> let xx = (-1 * (cols / 2) + (toFloat x)) * blockDim in
-     let yy = (-1 * (rows / 2) + (toFloat y)) * blockDim in
-     move (xx, yy)
+  let xx = (-1 * (cols / 2) + (toFloat x)) * blockDim in
+  let yy = (-1 * (rows / 2) + (toFloat y)) * blockDim in
+  [(filled colour (square blockDim)), (outlined (solid black) (square blockDim))]
+  |> List.map (move (blockDim / 2, blockDim / 2))
+  |> List.map (move (xx, yy))
 
 buildScene : Board -> List Form
 buildScene board =
   Dict.toList board
-  |> List.map (\(pos, tcolor) -> block (toColor tcolor) pos)
+  |> List.concatMap (\(pos, tcolor) -> block (toColor tcolor) pos)
 
 render : GameState -> Element
 render state =
@@ -47,7 +47,7 @@ render state =
     let ps = List.map ((,) 0) ys
           ++ (List.map ((,) <| cols - 1) ys)
           ++ (List.map (flip (,) <| 0) xs) in
-        List.map (block darkCharcoal) <| ps  in
+        List.concatMap (block darkCharcoal) <| ps  in
   let forms = [backdrop] ++ trough ++ scene in
   collage (blockDim * cols) (blockDim * rows) forms
 backdrop =

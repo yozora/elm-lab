@@ -7,14 +7,11 @@ import Render2d exposing (render)
 
 import Debug
 
-emptyBoard = []
+emptyBoard = Dict.fromList []
 
 defaultState : GameState
 defaultState =
-  { board = Dict.fromList
-            [ ((1,1), Red)
-            , ((5,5), Blue)
-            ]
+  { board = emptyBoard
   , cursor = Nothing
   , next = (Line, Red)
   , paused = False
@@ -24,7 +21,7 @@ tetrominoOffset : TetrominoShape -> List Position
 tetrominoOffset piece =
   case piece of
     Line   -> [(-1,0), (0,0), (1,0), (2,0)]
-    Square -> []
+    Square -> [(0,0), (1,0), (0,1), (1,1)]
     ZPiece -> []
     SPiece -> []
     JPiece -> []
@@ -39,6 +36,10 @@ placeTetromino (tShape, tColour) (px, py) currentBoard =
   Dict.union currentBoard (Dict.fromList blocks)
               
 main =
-  let newBoard = placeTetromino (Line, Red) (5,10) defaultState.board in
+  let newBoard =
+        defaultState.board
+        |> placeTetromino (Square, Cyan) (5,1)
+        |> placeTetromino (Square, Purple) (1,2)
+        |> placeTetromino (Line, Red) (2,1) in
   let state = { defaultState | board <- newBoard } in
   render state
