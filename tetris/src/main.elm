@@ -41,5 +41,5 @@ main =
         |> placeTetromino (Square, Cyan) (5,1)
         |> placeTetromino (Square, Purple) (1,2)
         |> placeTetromino (Line, Red) (2,1) in
-  let state = { defaultState | board <- newBoard } in
+  let state = { defaultState | board = newBoard } in
   render state
