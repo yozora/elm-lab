@@ -4,13 +4,10 @@ import Color exposing (..)
 import Graphics.Collage exposing (..)
 import Graphics.Element exposing (Element)
 import Dict exposing (Dict, empty)
-import Array exposing (Array)
 
 import Data exposing (..)
 
 blockDim = 40
-rows = 22
-cols = 12
 
 
 toColor : TetrominoColour -> Color
@@ -25,30 +22,28 @@ toColor tcolor =
     Orange -> Color.darkOrange
     Shadow -> Color.darkCharcoal
 
-block : Color -> Position -> List Form
-block colour (x,y) =
-  let xx = (-1 * (cols / 2) + (toFloat x)) * blockDim in
-  let yy = (-1 * (rows / 2) + (toFloat y)) * blockDim in
+block : (Int, Int) -> Color -> Position -> List Form
+block (rows, cols) colour (x,y) =
+  let xx = (-1 * (cols // 2) + x) * blockDim in
+  let yy = (-1 * (rows // 2) + y) * blockDim in
   [(filled colour (square blockDim)), (outlined (solid black) (square blockDim))]
   |> List.map (move (blockDim / 2, blockDim / 2))
-  |> List.map (move (xx, yy))
+  |> List.map (move (xx |> toFloat, yy |> toFloat))
 
-buildScene : Board -> List Form
-buildScene board =
+buildScene : (Int, Int) -> Board -> List Form
+buildScene dims board =
   Dict.toList board
-  |> List.concatMap (\(pos, tcolor) -> block (toColor tcolor) pos)
+  |> List.concatMap (\(pos, tcolor) -> block dims (toColor tcolor) pos)
 
-render : GameState -> Element
-render state =
-  let scene = buildScene state.board in
-  let trough =
-    let ys = Array.toList <| Array.initialize (rows - 1) ((+) 1) in
-    let xs = Array.toList <| Array.initialize (cols) identity in
-    let ps = List.map ((,) 0) ys
-          ++ (List.map ((,) <| cols - 1) ys)
-          ++ (List.map (flip (,) <| 0) xs) in
-        List.concatMap (block darkCharcoal) <| ps  in
-  let forms = [backdrop] ++ trough ++ scene in
+render : (Int, Int) -> GameState -> Element
+render (rows, cols) state =
+  let block' = block (rows, cols) in
+  let scene = buildScene (rows, cols) state.board in
+  let forms = [backdrop (rows, cols)] ++ scene in
   collage (blockDim * cols) (blockDim * rows) forms
-backdrop =
-  (filled black (rect (blockDim * cols) (blockDim * rows)))
+
+backdrop: (Int, Int) -> Form
+backdrop (rows, cols) =
+  let (rows', cols')
+        = ((rows |> toFloat), (cols |> toFloat)) in
+  (filled black (rect (blockDim * cols') (blockDim * rows')))
